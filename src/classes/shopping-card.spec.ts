@@ -1,0 +1,62 @@
+import { Discount } from './discount';
+import { CartItem } from './interfaces/cart-item';
+import { ShoppingCart } from './shopping-cart';
+
+const createSut = () => {
+  const discountMock = createDiscountMock();
+  const sut = new ShoppingCart(discountMock);
+  return {
+    sut,
+    discountMock,
+  };
+};
+
+const createDiscountMock = () => {
+  class DiscountMock extends Discount {}
+  return new DiscountMock();
+};
+
+const createCartItem = (name: string, price: number) => {
+  class CartItemMock implements CartItem {
+    constructor(public name: string, public price: number) {}
+  }
+
+  return new CartItemMock(name, price);
+};
+
+const createSutWithProducts = () => {
+  const { sut, discountMock } = createSut();
+  const cartItem1 = createCartItem('Camiseta', 40);
+  const cartItem2 = createCartItem('Caneta', 4);
+  sut.addItem(cartItem1);
+  sut.addItem(cartItem2);
+
+  return { sut, discountMock };
+};
+
+describe('ShoppingCard', () => {
+  test('should be an empty cart when no product is added', () => {
+    const { sut } = createSut();
+
+    expect(sut.isEmpty()).toBe(true);
+  });
+
+  test('should have 2 items', () => {
+    const { sut } = createSutWithProducts();
+    expect(sut.items.length).toBe(2);
+  });
+
+  test('should test total and totalWithDiscount', () => {
+    const { sut } = createSutWithProducts();
+    expect(sut.total()).toBe(44);
+    expect(sut.totalWithDicount()).toBe(44);
+  });
+
+  test('should add products and clear card', () => {
+    const { sut } = createSutWithProducts();
+    expect(sut.items.length).toBe(2);
+    sut.clear();
+    expect(sut.items.length).toBe(0);
+    expect(sut.isEmpty()).toBeTruthy();
+  });
+});
